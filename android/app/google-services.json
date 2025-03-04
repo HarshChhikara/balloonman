@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "285696136744",
+    "project_id": "balloonman-68a8b",
+    "storage_bucket": "balloonman-68a8b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:285696136744:android:44231e79d7ae508004c71d",
+        "android_client_info": {
+          "package_name": "com.example.balloonman"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvHV6ujyVounKi9MSNeGsyqrXpSFRXygY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

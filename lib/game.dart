@@ -13,6 +13,7 @@ import 'package:balloonman/screens/main_menu.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'components/pause_button.dart';
 import 'package:flame_audio/flame_audio.dart';
@@ -29,6 +30,9 @@ class BalloonMan extends FlameGame
   late AudioManager audioManager;
 
   bool isPaused = false;
+
+  RewardedAd? _rewardedAd;
+  bool _isRewardedAdLoaded = false;
 
   @override
   FutureOr<void> onLoad() async {
@@ -57,6 +61,17 @@ class BalloonMan extends FlameGame
 
     pauseButton = PauseButton();
     add(pauseButton);
+
+    await _loadRewardedAd();
+  }
+
+  int _savedScore = 0;
+  void _saveScore() {
+    _savedScore = score;
+  }
+
+  void _restoreScore() {
+    score = _savedScore;
   }
 
   @override
@@ -97,9 +112,60 @@ class BalloonMan extends FlameGame
     isPaused = !isPaused;
   }
 
+  Future<void> _loadRewardedAd() async {
+    await RewardedAd.load(
+      adUnitId: "ca-app-pub-3482970658164433/2051131039",
+      request: AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          _rewardedAd = ad;
+          _isRewardedAdLoaded = true;
+        },
+        onAdFailedToLoad: (error) {
+          _isRewardedAdLoaded = false;
+        },
+      ),
+    );
+  }
+
+  void _showRewardedAd() {
+    if (_isRewardedAdLoaded) {
+      _rewardedAd?.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _loadRewardedAd();
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _loadRewardedAd();
+        },
+      );
+
+      _rewardedAd?.show(
+        onUserEarnedReward: (ad, reward) {
+          resumeGameAfterAd();
+        },
+      );
+    }
+  }
+
+  void resumeGameAfterAd() {
+    _restoreScore();
+    resetGame(keepScore: true);
+    isGameOver = false;
+    resumeEngine();
+  }
+
+  @override
+  void onRemove() {
+    _rewardedAd?.dispose();
+    super.onRemove();
+  }
+
   void showPauseMenu() {
     showDialog(
       context: buildContext!,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text("Game Paused"),
         actions: [
@@ -133,17 +199,20 @@ class BalloonMan extends FlameGame
   }
 
   bool isGameOver = false;
+  Vector2? lastPlayerPosition;
 
   void gameOver() {
     if (isGameOver) return;
 
     isGameOver = true;
+    _saveScore();
     pauseEngine();
     saveHighScore();
     FlameAudio.bgm.stop();
 
     showDialog(
       context: buildContext!,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text("Game Over"),
         content: Text("Current Score: $score\nHigh Score: $highScore"),
@@ -155,18 +224,27 @@ class BalloonMan extends FlameGame
             },
             child: const Text("Restart"),
           ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showRewardedAd();
+            },
+            child: const Text("Watch Ad to Continue"),
+          ),
         ],
       ),
     );
   }
 
-  void resetGame() {
+  void resetGame({bool keepScore = false}) {
     man.position = Vector2(
       (size.x - man.size.x) / 2,
       size.y - man.size.y - 50,
     );
     man.velocity = 0;
-    score = 0;
+    if (!keepScore) {
+      score = 0;
+    }
     children.whereType<Cloud>().forEach((cloud) => cloud.removeFromParent());
     children.whereType<Coin>().forEach((coin) => coin.removeFromParent());
     background.position = Vector2(0, 0);
