@@ -2,6 +2,7 @@ import 'package:balloonman/api/firebase_api.dart';
 import 'package:balloonman/components/audio_manager.dart';
 import 'package:balloonman/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'game.dart';
@@ -15,16 +16,17 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseApi().initNotifications();
 
-  final game = BalloonMan();
-  runApp(MyApp(game: game));
+  // final game = BalloonMan(context: context);
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final BalloonMan game;
-  const MyApp({super.key, required this.game});
+  // final BalloonMan game;
+  // const MyApp({super.key, required this.game});
 
   @override
   Widget build(BuildContext context) {
+    final game = BalloonMan(context: context);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: MainMenu(game: game, audioManager: AudioManager(), key: key),
@@ -32,6 +34,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/main_menu': (context) =>
             MainMenu(game: game, audioManager: AudioManager(), key: key),
+        '/game': (context) => GameWidget(game: game),
       },
     );
   }

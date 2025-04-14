@@ -116,8 +116,8 @@ class _MainMenuState extends State<MainMenu> {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                    GameWidget(game: BalloonMan())),
+                                builder: (context) => GameWidget(
+                                    game: BalloonMan(context: context))),
                           );
                         },
                         child: const Text("Start Game"),

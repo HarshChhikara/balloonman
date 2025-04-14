@@ -15,7 +15,7 @@ void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     final game = BalloonMan();
     // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp(game: game));
+    await tester.pumpWidget(MyApp());
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

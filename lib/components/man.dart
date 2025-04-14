@@ -45,7 +45,8 @@ class Man extends SpriteComponent
     super.onCollision(intersectionPoints, other);
 
     if (other is Cloud) {
-      (parent as BalloonMan).gameOver();
+      //(parent as BalloonMan).gameOver();
+      gameRef.gameOver();
     }
     if (other is Coin) {
       other.collect();

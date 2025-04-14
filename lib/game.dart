@@ -29,6 +29,9 @@ class BalloonMan extends FlameGame
   late PauseButton pauseButton;
   late AudioManager audioManager;
 
+  BuildContext context;
+  BalloonMan({required this.context});
+
   bool isPaused = false;
 
   RewardedAd? _rewardedAd;
@@ -128,16 +131,21 @@ class BalloonMan extends FlameGame
     );
   }
 
-  void _showRewardedAd() {
+  void _showRewardedAd(BuildContext context) {
     if (_isRewardedAdLoaded) {
+      Navigator.pop(context);
+      pauseEngine();
+
       _rewardedAd?.fullScreenContentCallback = FullScreenContentCallback(
         onAdDismissedFullScreenContent: (ad) {
           ad.dispose();
           _loadRewardedAd();
+          resumeEngine();
         },
         onAdFailedToShowFullScreenContent: (ad, error) {
           ad.dispose();
           _loadRewardedAd();
+          resumeEngine();
         },
       );
 
@@ -211,7 +219,7 @@ class BalloonMan extends FlameGame
     FlameAudio.bgm.stop();
 
     showDialog(
-      context: buildContext!,
+      context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text("Game Over"),
@@ -224,13 +232,14 @@ class BalloonMan extends FlameGame
             },
             child: const Text("Restart"),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showRewardedAd();
-            },
-            child: const Text("Watch Ad to Continue"),
-          ),
+          if (_isRewardedAdLoaded)
+            TextButton(
+              onPressed: () {
+                //Navigator.pop(context);
+                _showRewardedAd(context);
+              },
+              child: const Text("Watch Ad to Continue"),
+            ),
         ],
       ),
     );
